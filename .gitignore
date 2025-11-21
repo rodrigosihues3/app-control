@@ -1,0 +1,21 @@
+# --- Dependencias (NUNCA subir) ---
+node_modules/
+*/node_modules/
+
+# --- Base de Datos (NUNCA subir la local) ---
+*.sqlite
+*.db
+backend/database.sqlite
+
+# --- Variables de Entorno (Secretos) ---
+.env
+*/.env
+
+# --- Archivos de Build (Se generan al compilar) ---
+dist/
+build/
+frontend/dist/
+
+# --- Logs y Sistema ---
+*.log
+.DS_Store
