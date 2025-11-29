@@ -21,6 +21,9 @@ export default function HomeQR() {
           </div>
 
           <div className="mt-5 text-muted small">
+            ¿No puedes escanear el código? <a href="/control">Ingresa aquí</a>
+          </div>
+          <div className="mt-2 text-muted small">
             ¿Eres administrador? <a href="/login">Ingresa al Panel</a>
           </div>
         </Card.Body>
