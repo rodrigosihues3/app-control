@@ -4,6 +4,7 @@ const db = require('./models'); // Importa tus modelos de Sequelize
 const registroRoutes = require('./routes/registroRoutes');
 const visitanteRoutes = require('./routes/visitanteRoutes');
 const authRoutes = require('./routes/authRoutes');
+const { iniciarScheduler } = require('./services/backupService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,6 +30,7 @@ db.sequelize.sync({ force: false }).then(() => {
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    iniciarScheduler();
   });
 }).catch((error) => {
   console.error('Error al conectar con la base de datos:', error);

@@ -36,3 +36,4 @@ sudo docker-compose up --build -d
 # En caso de bugs por compatibilidad, usar en la raiz, donde se encuentra le docker compose
 ### Detener y borrar todos los contenedores creados por compose
 sudo docker-compose down --remove-orphans
+sudo docker-compose up --build -d
