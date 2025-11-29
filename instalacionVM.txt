@@ -1,0 +1,27 @@
+# 1. Actualizar lista de paquetes
+sudo apt update
+
+# 2. Instalar Docker, Docker Compose y Git
+sudo apt install docker.io docker-compose git -y
+
+- Opcional Iniciar Docker (En caso de problemas al ejecutar el docker compose)
+sudo service docker start
+
+# 3. Clonar repositorio y ejecutar aplicación
+git clone https://github.com/TU_USUARIO/TU_REPO.git
+cd nombre-del-repo
+cd backend
+
+- En el backend crear la base de datos desde 0 o importar una existente con el siguiente nombre "database.sqlite"
+touch database.sqlite
+
+- Volver a la raíz y ejecutar el docker compose
+cd ..
+sudo docker-compose up --build -d
+
+- Inicializar la Base de Datos
+# 1. Crear las tablas (Migraciones)
+sudo docker-compose exec backend npx sequelize-cli db:migrate
+
+# 2. Crear el Admin por defecto (Seeders)
+sudo docker-compose exec backend npx sequelize-cli db:seed:all
