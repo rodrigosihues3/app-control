@@ -4,14 +4,14 @@ import { Container, Row, Col, Card, Table, Badge, Button, ButtonGroup } from 're
 import { getRegistros } from '../services/api';
 
 export default function AdminPanel() {
-  const [registros, setRegistros] = useState([]); // Ahora guardará 'content'
+  const [registros, setRegistros] = useState([]);
 
   // Estados de Paginación
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
-  // URL del QR (Igual que antes)
+  // URL del QR
   const urlRegistro = `${window.location.origin}/control`;
 
   // Carga inicial y cuando cambia la página
@@ -30,13 +30,13 @@ export default function AdminPanel() {
 
     cargarDatos(page);
 
-    // 3. Configurar intervalo solo si estamos en la página 0 (En Vivo)
+    // Configurar intervalo solo si estamos en la página 0 (En Vivo)
     let intervalo;
     if (page === 0) {
       intervalo = setInterval(() => cargarDatos(0), 5000);
     }
 
-    // 4. Limpiar intervalo al desmontar o cambiar de página
+    // Limpiar intervalo al desmontar o cambiar de página
     return () => {
       if (intervalo) clearInterval(intervalo);
     };
@@ -64,7 +64,7 @@ export default function AdminPanel() {
                 <QRCode value={urlRegistro} size={200} />
               </div>
               <Badge bg="light" text="dark" className="mt-2">
-                <a href="http://35.193.93.247/control">http://35.193.93.247/control</a>
+                <a href={urlRegistro}>{urlRegistro}</a>
               </Badge>
             </Card.Body>
           </Card>
