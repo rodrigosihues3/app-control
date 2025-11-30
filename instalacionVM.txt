@@ -1,39 +1,73 @@
-# 1. Actualizar lista de paquetes
-sudo apt update
+# ==========================================
+# GUÍA DE DESPLIEGUE - CONTROL DE ASISTENCIA
+# ==========================================
 
-# 2. Instalar Docker, Docker Compose y Git
+# 1. PREPARACIÓN DE LA VM
+# -----------------------
+# Actualizar lista de paquetes
+sudo apt update
+sudo apt upgrade
+
+# Instalar herramientas base (Git y Docker básico)
+# Nota: 'docker-compose' aquí instala la V1 vieja, pero es útil tenerla por si acaso.
 sudo apt install docker.io docker-compose git -y
 
-- Opcional Iniciar Docker (En caso de problemas al ejecutar el docker compose)
+# INSTALAR DOCKER COMPOSE V2 (OBLIGATORIO para evitar errores)
+# Crear la carpeta global de plugins:
+sudo mkdir -p /usr/lib/docker/cli-plugins
+
+# Descargar el plugin oficial:
+sudo curl -SL https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64 -o /usr/lib/docker/cli-plugins/docker-compose
+
+# Darle permisos de ejecución:
+sudo chmod +x /usr/lib/docker/cli-plugins/docker-compose
+
+# Iniciar el servicio Docker (Opcional)
 sudo service docker start
 
-# 3. Clonar repositorio y ejecutar aplicación
+
+# 2. INSTALACIÓN DEL PROYECTO
+# ---------------------------
+# Clonar repositorio
 git clone https://github.com/TU_USUARIO/TU_REPO.git
 cd nombre-del-repo
 cd backend
 
-- En el backend crear la base de datos desde 0 o importar una existente con el siguiente nombre "database.sqlite"
+# A) Crear el archivo de base de datos vacío (para el volumen)
 touch database.sqlite
 
-- Volver a la raíz y ejecutar el docker compose
+# B) Crear el archivo de variables de entorno
+nano .env
+
+# Volver a la raíz
 cd ..
-sudo docker-compose up --build -d
 
-- Inicializar la Base de Datos
-# 1. Crear las tablas (Migraciones)
-sudo docker-compose exec backend npx sequelize-cli db:migrate
 
-# 2. Crear el Admin por defecto (Seeders)
-sudo docker-compose exec backend npx sequelize-cli db:seed:all
+# 3. EJECUCIÓN INICIAL
+# --------------------
+# Levantar los contenedores
+# Usar "docker compose" (con espacio) para usar la V2
+sudo docker compose up --build -d
 
-# Para cambios en la aplicación subir a Github, luego en la VM
-### Descarga el código nuevo posicionandote en la ruta correcta
-git pull origin main
+# Inicializar la Base de Datos (Solo la primera vez)
+# 1. Crear las tablas
+sudo docker compose exec backend npx sequelize-cli db:migrate
 
-### Reconstruye la aplicación
-sudo docker-compose up --build -d
+# 2. Crear el Admin por defecto
+sudo docker compose exec backend npx sequelize-cli db:seed:all
 
-# En caso de bugs por compatibilidad, usar en la raiz, donde se encuentra le docker compose
-### Detener y borrar todos los contenedores creados por compose
-sudo docker-compose down --remove-orphans
-sudo docker-compose up --build -d
+
+# 4. MANTENIMIENTO Y ACTUALIZACIONES
+# ----------------------------------
+# Para subir cambios:
+# 1. En la PC: git push origin main
+# 2. En la VM: git pull origin main
+
+# Reconstruye y reinicia (sin borrar datos)
+sudo docker compose up --build -d
+
+# 5. SOLUCIÓN DE PROBLEMAS (Reset total)
+# --------------------------------------
+# Si hay errores raros de contenedores huérfanos o conflictos:
+sudo docker compose down --remove-orphans
+sudo docker compose up --build -d

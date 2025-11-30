@@ -62,6 +62,9 @@ export default function AdminLogin() {
             <Button variant="primary" type="submit" className="w-100 btn-lg">
               Ingresar
             </Button>
+            <div className="mt-3 text-center text-muted small">
+              ¿Quieres volver al inicio? <a href="/">Clic aquí</a>
+            </div>
           </Form>
         </Card.Body>
       </Card>

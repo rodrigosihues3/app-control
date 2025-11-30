@@ -66,6 +66,7 @@ export default function ControlAsistencia() {
       }
     } catch (error) {
       setMensaje({ type: 'danger', text: 'Error de conexión con el servidor.' });
+      console.log("Error: ", error);
     } finally {
       setLoadingSearch(false);
     }
@@ -110,6 +111,7 @@ export default function ControlAsistencia() {
 
     } catch (error) {
       setMensaje({ type: 'danger', text: 'Error al guardar el registro.' });
+      console.log("Error: ", error);
     } finally {
       // 2. Desbloqueamos el botón solo cuando todo terminó
       setLoadingSubmit(false);
@@ -236,7 +238,9 @@ export default function ControlAsistencia() {
                 'REGISTRAR CONTROL'
               )}
             </Button>
-
+            <div className="mt-3 text-center text-muted small">
+              ¿Quieres volver al inicio? <a href="/">Clic aquí</a>
+            </div>
           </Form>
         </Card.Body>
       </Card>

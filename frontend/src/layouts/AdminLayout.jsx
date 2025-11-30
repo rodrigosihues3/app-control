@@ -32,6 +32,11 @@ export default function AdminLayout() {
               <Nav.Link as={Link} to="/admin/usuarios" active={location.pathname.includes('usuarios')}>
                 Admins
               </Nav.Link>
+              <div className="vr mx-2 d-none d-lg-block"></div> {/* Línea vertical separadora de Bootstrap */}
+
+              <Nav.Link as={Link} to="/" className="text-secondary">
+                <i className="bi bi-qr-code-scan me-1"></i> Ir al inicio (QR)
+              </Nav.Link>
             </Nav>
             <div className="d-flex align-items-center gap-3">
               <span className="text-muted">Hola, <strong>{adminNombre}</strong></span>
