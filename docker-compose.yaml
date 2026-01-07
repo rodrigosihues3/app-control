@@ -4,7 +4,11 @@ services:
     container_name: control-backend
     restart: always
     ports:
-      - "3000:3000" # Opcional, solo para debug
+      - "3000:3000"
+    environment:
+      - TZ=America/Lima # HORA PERÚ (Importante para la asistencia)
+    env_file:
+      - ./backend/.env # Inyecta las variables secretas
     volumes:
       # Esto guarda la BD en tu carpeta local para que no se borre al reiniciar docker
       - ./backend/database.sqlite:/app/database.sqlite
