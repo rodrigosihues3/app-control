@@ -5,12 +5,16 @@ services:
     restart: always
     ports:
       - "3000:3000"
+<<<<<<< HEAD
     environment:
       - TZ=America/Lima # HORA PERÚ (Importante para la asistencia)
     env_file:
       - ./backend/.env # Inyecta las variables secretas
+=======
+    env_file:
+      - ./backend/.env
+>>>>>>> 5af1175774124d24090195cfb5b10c8560211e6c
     volumes:
-      # Esto guarda la BD en tu carpeta local para que no se borre al reiniciar docker
       - ./backend/database.sqlite:/app/database.sqlite
 
   frontend:
