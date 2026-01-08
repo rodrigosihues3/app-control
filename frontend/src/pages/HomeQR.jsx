@@ -24,7 +24,7 @@ export default function HomeQR() {
             ¿No puedes escanear el código? <a href="/control">Ingresa aquí</a>
           </div>
           <div className="mt-2 text-muted small">
-            ¿Eres administrador? <a href="/admin">Ingresa al Panel</a>
+            ¿Quieres ver tu historial? <a href="/admin">Inicia sesión con tu DNI</a>
           </div>
         </Card.Body>
       </Card>

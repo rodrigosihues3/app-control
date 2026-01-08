@@ -1,44 +1,62 @@
-const { Admin } = require('../models');
+const { Admin, Visitante } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const login = async (req, res) => {
   try {
     const { usuario, password } = req.body;
+    let rol = '';
+    let dataUsuario = {};
+    let userId = null;
 
-    // 1. Buscar al admin por su nombre de usuario
+    // --- INTENTO 1: Buscar en ADMINS ---
     const admin = await Admin.findOne({ where: { usuario } });
 
-    if (!admin) {
-      return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+    if (admin) {
+      // Admin usa bcrypt (según tu código original)
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) return res.status(401).json({ message: 'Credenciales incorrectas' });
+
+      rol = 'admin';
+      userId = admin.id;
+      dataUsuario = { id: admin.id, nombre: admin.nombre, usuario: admin.usuario };
     }
 
-    // 2. Comparar la contraseña ingresada con la encriptada en la BD
-    const isMatch = await bcrypt.compare(password, admin.password);
+    // --- INTENTO 2: Buscar en VISITANTES (Si no es admin) ---
+    else {
+      // Asumimos que el "usuario" ingresado en el form es el DNI
+      const visitante = await Visitante.findOne({ where: { dni: usuario } });
 
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+      if (!visitante) {
+        return res.status(401).json({ message: 'Usuario no encontrado' });
+      }
+
+      // Visitante usa TEXTO PLANO (según tu requerimiento)
+      // Si la contraseña es null (usuario viejo sin migrar), validamos directo con DNI
+      const passAlmacenada = visitante.password || visitante.dni;
+
+      if (password !== passAlmacenada) {
+        return res.status(401).json({ message: 'Contraseña incorrecta' });
+      }
+
+      rol = 'visitante';
+      userId = visitante.id;
+      dataUsuario = { id: visitante.id, nombre: visitante.nombres, dni: visitante.dni };
     }
 
-    // 3. Generar el Token (El "Pase VIP")
-    // Usamos una clave secreta simple para fines académicos. En producción iría en el .env
+    // --- GENERAR TOKEN ---
     const secret = process.env.JWT_SECRET || 'secreto_academico_super_seguro';
-
     const token = jwt.sign(
-      { id: admin.id, nombre: admin.nombre }, // Datos que van dentro del token
+      { id: userId, rol: rol }, // <--- IMPORTANTE: Guardamos el ROL en el token
       secret,
-      { expiresIn: '8h' } // El token dura 8 horas
+      { expiresIn: '8h' }
     );
 
-    // 4. Responder con el token y los datos del admin (sin la contraseña)
     res.json({
       message: 'Bienvenido',
       token: token,
-      admin: {
-        id: admin.id,
-        nombre: admin.nombre,
-        usuario: admin.usuario
-      }
+      rol: rol, // Enviamos el rol al frontend para saber a dónde redirigir
+      usuario: dataUsuario
     });
 
   } catch (error) {
@@ -101,4 +119,24 @@ const deleteAdmin = async (req, res) => {
   }
 };
 
-module.exports = { login, getAdmins, createAdmin, deleteAdmin };
+// EJECUTAR ESTO UNA SOLA VEZ (Vía Postman o similar)
+const migrarContrasenasVisitantes = async (req, res) => {
+  try {
+    const visitantes = await Visitante.findAll();
+    let cont = 0;
+
+    for (const v of visitantes) {
+      // Como pediste: La contraseña será el mismo DNI, SIN encriptar
+      v.password = v.dni;
+      await v.save();
+      cont++;
+    }
+
+    res.json({ message: `Se actualizaron ${cont} visitantes. Ahora su password es su DNI.` });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error en migración' });
+  }
+};
+
+module.exports = { login, getAdmins, createAdmin, deleteAdmin, migrarContrasenasVisitantes };

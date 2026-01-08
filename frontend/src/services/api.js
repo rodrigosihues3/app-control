@@ -13,7 +13,10 @@ const api = axios.create({
 // --- INTERCEPTOR ---
 // Antes de cada petición, inyectamos el token si existe
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('admin_token');
+  // CAMBIO IMPORTANTE: Ahora buscamos 'token' (genérico) en lugar de 'admin_token'
+  // Esto coincide con el localStorage.setItem('token', ...)
+  const token = localStorage.getItem('token');
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -28,6 +31,14 @@ export const getRegistros = async (page = 0, size = 10) => {
   return response.data;
 };
 
+// --- SERVICIO PARA EL VISITANTE (HISTORIAL) ---
+export const getMisRegistros = async (page = 1, limit = 10) => {
+  // Llama a la ruta protegida en el backend
+  const response = await api.get(`/registro/mis-registros?page=${page}&limit=${limit}`);
+  return response.data;
+};
+// ---------------------------
+
 export const registrarAsistencia = async (data) => {
   // data = { dni, nombres, apellidos, tipo }
   const response = await api.post('/registro', data);
@@ -40,7 +51,7 @@ export const buscarVisitante = async (dni) => {
   return response.data;
 };
 
-// --- SERVICIO DE LOGIN (NUEVO) ---
+// --- SERVICIO DE LOGIN ---
 export const loginAdmin = async (credenciales) => {
   const response = await api.post('/auth/login', credenciales);
   return response.data;

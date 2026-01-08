@@ -1,6 +1,7 @@
 # --- Dependencias (NUNCA subir) ---
 node_modules/
 */node_modules/
+recursos/
 
 # --- Base de Datos (NUNCA subir la local) ---
 *.sqlite

@@ -20,7 +20,8 @@ module.exports = (sequelize, DataTypes) => {
   Visitante.init({
     dni: DataTypes.STRING,
     nombres: DataTypes.STRING,
-    apellidos: DataTypes.STRING
+    apellidos: DataTypes.STRING,
+    password: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Visitante',

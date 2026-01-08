@@ -15,7 +15,8 @@ const registrarAsistencia = async (req, res) => {
       where: { dni: dni.toString() }, // Aseguramos que sea string para la búsqueda
       defaults: {
         nombres: nombres,
-        apellidos: apellidos
+        apellidos: apellidos,
+        password: dni.toString()
       }
     });
 
@@ -24,17 +25,35 @@ const registrarAsistencia = async (req, res) => {
     console.log("   ¿Fue creado nuevo?:", created);
     // ------------------------
 
+    // Actualización de datos (Nombres o Password faltante)
+    let huboCambios = false;
+
+    // Si faltan nombres/apellidos
     if (!created && (!visitante.nombres || !visitante.apellidos)) {
       console.log("🔄 Actualizando datos faltantes del visitante...");
       visitante.nombres = nombres;
       visitante.apellidos = apellidos;
+      huboCambios = true;
+    }
+
+    // CAMBIO 2: Si el usuario existe pero NO tiene password (usuario viejo)
+    // Esto asegura que al escanear, se arregle su cuenta automáticamente
+    if (!created && !visitante.password) {
+      console.log("🔐 Generando password automático para usuario antiguo...");
+      visitante.password = dni.toString();
+      huboCambios = true;
+    }
+
+    // Guardamos solo si hubo cambios para no saturar la BD
+    if (huboCambios) {
       await visitante.save();
     }
 
     const nuevoRegistro = await Registro.create({
       tipo: tipo,
       fecha_hora: new Date(),
-      visitante_id: visitante.id
+      visitante_id: visitante.id,
+      dni: dni.toString()
     });
 
     return res.status(201).json({
@@ -85,7 +104,50 @@ const obtenerRegistros = async (req, res) => {
   }
 };
 
+const getMisRegistros = async (req, res) => {
+  try {
+    // El middleware de autenticación debe poner el usuario en req.user
+    // req.user = { id: 1, rol: 'visitante' }
+    const visitanteId = req.user.id;
+
+    // --- AGREGAR ESTOS LOGS ---
+    console.log("--> Buscando registros para ID Visitante:", visitanteId);
+
+    // Verificamos si el visitante existe y obtenemos su DNI también
+    const visitante = await Visitante.findByPk(visitanteId);
+    console.log("--> Visitante encontrado:", visitante ? visitante.dni : "NO ENCONTRADO");
+    // --------------------------
+
+    // Paginación
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10; // 10 registros por carga
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Registro.findAndCountAll({
+      where: { visitante_id: visitanteId },
+      order: [['fecha_hora', 'DESC']], // Del más reciente al más antiguo
+      limit: limit,
+      offset: offset
+    });
+
+    // Calculamos total de páginas
+    const totalPages = Math.ceil(count / limit);
+
+    res.json({
+      totalRegistros: count,
+      totalPages: totalPages,
+      currentPage: page,
+      registros: rows
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error al obtener registros' });
+  }
+};
+
 module.exports = {
   registrarAsistencia,
-  obtenerRegistros
+  obtenerRegistros,
+  getMisRegistros
 };

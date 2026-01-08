@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Container, Card, Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { loginAdmin } from '../services/api';
@@ -9,6 +9,10 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    localStorage.clear();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -17,14 +21,18 @@ export default function AdminLogin() {
       const data = await loginAdmin({ usuario, password });
 
       // Guardamos el token y el nombre
-      localStorage.setItem('admin_token', data.token);
-      localStorage.setItem('admin_nombre', data.admin.nombre);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('usuario_nombre', data.usuario.nombre);
+      localStorage.setItem('usuario_rol', data.rol);
 
       // Redirigimos al panel
-      navigate('/admin');
-
+      if (data.rol === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/mis-registros'); // Nueva ruta para visitantes
+      }
     } catch (err) {
-      setError('Credenciales incorrectas o error de conexión.');
+      setError('Credenciales incorrectas o usuario no registrado.');
       console.log("Error: ", err)
     }
   };
@@ -33,7 +41,7 @@ export default function AdminLogin() {
     <Container fluid className="d-flex justify-content-center align-items-center min-vh-100 bg-dark">
       <Card className="p-4 shadow-lg" style={{ width: '400px' }}>
         <Card.Body>
-          <h3 className="text-center mb-4 fw-bold">Acceso Administrativo</h3>
+          <h3 className="text-center mb-4 fw-bold">Accede a tu historial</h3>
 
           {error && <Alert variant="danger">{error}</Alert>}
 
@@ -43,6 +51,7 @@ export default function AdminLogin() {
               <Form.Control
                 type="text"
                 autoFocus
+                placeholder="Ingresa tu DNI"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
                 required
@@ -54,6 +63,7 @@ export default function AdminLogin() {
               <Form.Control
                 type="password"
                 value={password}
+                placeholder="Es tu DNI por defecto"
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
